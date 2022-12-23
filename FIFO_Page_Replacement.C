@@ -35,10 +35,6 @@ int main()
     //Index to insert element
     int index=-1;
 
-    //Counters
-    int page_miss=0;  //page fault
-    int page_hits=0;
-
     //Traversing each symbol in fifo
     for (int i=0;i<n;i++){
         int flag=0;

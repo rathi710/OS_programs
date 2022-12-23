@@ -15,19 +15,6 @@ struct process
     int bt_remaining;
 };
 
-int comparator(const void *p, const void *q)
-{
-    int l=((struct process*)p)->at;
-    int r=((struct process*)q)->at;
-
-    int c=((struct process*)p)->pid;
-    int d=((struct process*)q)->pid;
-
-    if(l==r) 
-      return (c-d);
-    return (l-r);
-}
-
 int findmax(int a, int b)
 {
     return a>b?a:b;
@@ -38,7 +25,7 @@ int main()
     printf("Enter the number of process:");
     scanf("%d", &n);
 
-     struct process p[n];
+    struct process p[n];
 
     bool visited[100]={false};
     int current_time=0 ;
@@ -46,34 +33,38 @@ int main()
     int tq;
 
     int queue[100] , front =-1 , rear=-1;
-
     float sum_tat , sum_wt , sum_rt;
 
-    printf("Enter the pid of process:");
-    for(int i=0;i<n;i++)
-    {
-        scanf("%d",&p[i].pid);
-    }
     printf("Enter the arrival time of process:");
-    for(int i=0;i<n;i++)
-    {
+    for(int i=0;i<n;i++){ 
         scanf("%d",&p[i].at);
+        p[i].pid = i;
     }
+
     printf("Enter the burst time of process:");
-    for(int i=0;i<n;i++)
-    {
+    for(int i=0;i<n;i++){
         scanf("%d",&p[i].bt);
         p[i].bt_remaining=p[i].bt;
     }
 
-    printf("\nEnter the time quantum value:");
-    scanf("%d", &tq);
+    printf("\nEnter the time quantum value:"); scanf("%d", &tq);
 
-    qsort((void *)p, n, sizeof p[0] , comparator);
+    //sort according to arrival time of processes
+    for(int i=0; i<n-1; i++){
+        for(int j=0; j<n-i-1; j++){
+            if(p[j].at > p[j+1].at)
+            {
+                struct process temp  = p[j];
+                p[j] = p[j+1];
+                p[j+1] = temp;
+            }
+        }
+    }
 
+    //put index of first process into the ready queue and mark visited
     front=rear=0;
     queue[rear]=0;
-     visited[0]=true;
+    visited[0]=true;
     
     int index;
     while(completed !=n)
@@ -81,22 +72,20 @@ int main()
         index=queue[front];
         front++;
 
-        if(p[index].bt_remaining==p[index].bt)
-        {
+        //process coming first time
+        if(p[index].bt_remaining==p[index].bt){
             p[index].start_time=findmax(current_time,p[index].at);
-
             current_time=p[index].start_time;
 
         }
-
-        if(p[index].bt_remaining-tq>0)
-        {
+        //process not coming first time but still remaining
+        if(p[index].bt_remaining-tq>0){
             p[index].bt_remaining -=tq;
             current_time +=tq;
         }
-        else
-        {
-            current_time += p[index].bt_remaining;
+        //process completed
+        else{
+            current_time += p[index].bt_remaining;  //could be less than tq
             p[index].bt_remaining=0;
 
             completed++;
@@ -109,29 +98,25 @@ int main()
             sum_tat +=p[index].tat;
             sum_wt  +=p[index].wt;
             sum_rt  +=p[index].rt;
-
         }
 
-        for(int i=1; i<n;i++)
-        {
-            if(p[i].bt_remaining>0 && p[i].at<=current_time && visited[i]==false)
-            {
+        //put another process which is within the time limit
+        for(int i=1; i<n;i++){
+            if(p[i].bt_remaining>0 && p[i].at<=current_time && visited[i]==false) {
                 queue[++rear]=i;
                 visited[i]=true;
             }
         }
 
-        if(p[index].bt_remaining>0)
-        {
+        //if current process still remaining, put into queue again
+        if(p[index].bt_remaining>0){
             queue[++rear]=index;
         }
 
-        if(front>rear)
-        {
-            for(int i=1; i<n;i++)
-            {
-                if(p[i].bt_remaining>0)
-                {
+        //when there is idle time
+        if(front>rear){
+            for(int i=1; i<n;i++){
+                if(p[i].bt_remaining>0){
                     queue[rear++]=i;
                     visited[i]=true;
                     break;
@@ -140,14 +125,14 @@ int main()
         }
 
     }
-   printf("Pid AT BT ST CT TAT WT RT\n");
-  for(int i=0;i<n;i++)
+    printf("Pid AT BT ST CT TAT WT RT\n");
+    for(int i=0;i<n;i++)
     printf("%d   %d   %d   %d   %d   %d   %d   %d\n",p[i].pid,p[i].at,p[i].bt,p[i].start_time,p[i].ct,p[i].tat,p[i].wt,p[i].rt);
-  printf("\n");    
+    printf("\n");    
 
-  printf("\nAverage Turn Around time= %.2f",(float)sum_tat/n);
-  printf("\nAverage Waiting Time= %.2f",(float)sum_wt/n);
-  printf("\nAverage Response Time= %.2f",(float)sum_rt/n); 
+    printf("\nAverage Turn Around time= %.2f",(float)sum_tat/n);
+    printf("\nAverage Waiting Time= %.2f",(float)sum_wt/n);
+    printf("\nAverage Response Time= %.2f",(float)sum_rt/n); 
    
   return 0;
 }

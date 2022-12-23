@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "FIFO_Page_Replacement.C": "cpp"
+    }
+}

@@ -41,7 +41,7 @@ int main()
 
 
 
-//sample input/output:-
+//sample I/O:-
 // Enter the number of Request
 // 8
 // Enter Request Sequence
